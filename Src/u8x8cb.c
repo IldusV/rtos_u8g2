@@ -12,7 +12,12 @@
 //#include "stm32l031xx.h"
 #include "delay.h"
 #include "u8x8.h"
+//#include "stm32f0308_discovery.h"
+#define SSD1306_I2C_ADDRESS 0x78
 
+extern I2C_HandleTypeDef hi2c1;
+#define	STM32_HAL_I2C_HANDLER	hi2c1
+#define	STM32_HAL_I2C_TIMEOUT	2000
 
 uint8_t u8x8_gpio_and_delay_stm32l0(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
 {
@@ -57,7 +62,7 @@ uint8_t u8x8_gpio_and_delay_stm32l0(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, 
       break;
     case U8X8_MSG_DELAY_I2C:
       /* arg_int is 1 or 4: 100KHz (5us) or 400KHz (1.25us) */
-      delay_micro_seconds(arg_int<=2?5:1);
+      //delay_micro_seconds(arg_int<=2?5:1);
       break;
     
     case U8X8_MSG_GPIO_I2C_CLOCK:
@@ -110,3 +115,8 @@ uint8_t u8x8_gpio_and_delay_stm32l0(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, 
   }
   return 1;
 }
+
+uint8_t u8x8_byte_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr)
+{
+HAL_I2C_Mem_Write(&STM32_HAL_I2C_HANDLER, SSD1306_I2C_ADDRESS, control,
+				1, (uint8_t *)arg_ptr, arg_int, STM32_HAL_I2C_TIMEOUT);}
