@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "STARTING GDB FOR RTOS PROJECT..."
+cd build
+gdb-multiarch RTOS.elf -x ../init.gdb
+
+
+

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+{ echo "init"; 
+  echo "reset init"; 
+  sleep 1;
+  echo "halt";
+  echo "flash write_image erase /home/ildus/Downloads/projects/RTOS/Projects/build/RTOS.elf"
+  sleep 2;
+  echo "reset run"
+  sleep 2;
+  echo "exit"; } | telnet localhost 4444
