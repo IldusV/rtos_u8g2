@@ -48,6 +48,7 @@ UART_HandleTypeDef huart1;
 
 osThreadId_t defaultTaskHandle;
 /* USER CODE BEGIN PV */
+osThreadId_t displayTaskHandle;
 u8g2_t u8g2;
 /* USER CODE END PV */
 
@@ -59,26 +60,63 @@ static void MX_USART1_UART_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+void StartDisplayTask(void *argument);
 /* external functions */
-uint8_t u8x8_gpio_and_delay_stm32l0(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
-uint8_t u8x8_byte_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t u8x8_byte_stm32hal_hw_i2c(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
+uint8_t psoc_gpio_and_delay_cb(u8x8_t *u8x8, uint8_t msg, uint8_t arg_int, void *arg_ptr);
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// void HAL_Delay(uint32_t Delay){
+//   //osDelay(Delay);
+// }
+
 void initDisplay(void)
 {
+  //uint8_t i = 0, j = 0, k = 0;
+
   /* setup display */
-  u8g2_Setup_ssd1306_i2c_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_i2c, u8x8_gpio_and_delay_stm32l0);
+  u8g2_Setup_ssd1306_i2c_128x64_noname_f(&u8g2, U8G2_R0, u8x8_byte_stm32hal_hw_i2c, psoc_gpio_and_delay_cb);
   u8g2_InitDisplay(&u8g2);
   u8g2_SetPowerSave(&u8g2, 0);
-  u8g2_SetFont(&u8g2, u8g2_font_6x12_tf);
-  u8g2_ClearBuffer(&u8g2);
-  u8g2_DrawStr(&u8g2, 0,12, "STM32L031");
-  u8g2_DrawStr(&u8g2, 0,24, u8x8_u8toa(SystemCoreClock/1000000, 2));
-  u8g2_DrawStr(&u8g2, 20,24, "MHz");
-  u8g2_SendBuffer(&u8g2);
+  // u8g2_SetFont(&u8g2, u8g2_font_6x12_tf);
+  // u8g2_ClearBuffer(&u8g2);
+  // u8g2_DrawStr(&u8g2, 0,12, "STM32L031");
+  // u8g2_DrawStr(&u8g2, 0,24, u8x8_u8toa(SystemCoreClock/1000000, 2));
+  // u8g2_DrawStr(&u8g2, 20,24, "MHz");
+  // u8g2_SendBuffer(&u8g2);
+  // while(1)
+  // {
+  //   if(k%2)
+  //     if(i<117)
+  //       i++;
+  //     else
+  //       k++;
+  //   else
+  //     if(i>10)
+  //       i--;
+  //     else
+  //       k--;
+      
+    
+  //     // if(!(i%4))
+  //     // {
+  //     //   j += 1;
+  //     // }
+  //     //u8g2_ClearBuffer(&u8g2);
+  //     u8g2_FirstPage(&u8g2);
+  //     do
+  //     {
+  //       //u8g2_SetFont(&u8g2, u8g2_font_6x12_tf);
+  //         //u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+  //       //u8g2_DrawStr(&u8g2, 0, 15, "Hello World!");
+  //       u8g2_DrawCircle(&u8g2, i, 32, 10+j, U8G2_DRAW_ALL);
+  //     } while (u8g2_NextPage(&u8g2));
+
+  //   //i = 0; j = 0;
+  // }
 } 
 /* USER CODE END 0 */
 
@@ -115,6 +153,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   initDisplay();
+
   /* USER CODE END 2 */
 
   osKernelInitialize();
@@ -145,6 +184,13 @@ int main(void)
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
+  const osThreadAttr_t displayTask_attributes = {
+    .name = "displayTask",
+    .priority = (osPriority_t) osPriorityNormal,
+    .stack_size = 512
+  };
+  displayTaskHandle = osThreadNew(StartDisplayTask, NULL, &displayTask_attributes);
+
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -322,7 +368,38 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void StartDisplayTask(void *argument)
+{
+  uint8_t i = 0, j = 0, k = 0;
 
+  /* Infinite loop */
+  for(;;)
+  {
+    HAL_GPIO_TogglePin(GPIOC, LD4_Pin);
+    //osDelay(100);
+
+    if(k%2)
+      if(i<117)
+        i+=2;
+      else
+        k++;
+    else
+      if(i>10)
+        i-=2;
+      else
+        k--;
+
+    //u8g2_ClearBuffer(&u8g2);
+    u8g2_FirstPage(&u8g2);
+    do
+    {
+      //u8g2_SetFont(&u8g2, u8g2_font_6x12_tf);
+      u8g2_SetFont(&u8g2, u8g2_font_ncenB14_tr);
+      u8g2_DrawStr(&u8g2, 0, 15, "Hello World!");
+      u8g2_DrawCircle(&u8g2, i, 32, 10+j, U8G2_DRAW_ALL);
+    } while (u8g2_NextPage(&u8g2));
+  }
+}
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -338,15 +415,34 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(2000);
-    HAL_GPIO_WritePin(GPIOC, LD4_Pin|LD3_Pin, GPIO_PIN_SET);
-    osDelay(50);
-    HAL_GPIO_WritePin(GPIOC, LD4_Pin|LD3_Pin, GPIO_PIN_RESET);
+     HAL_GPIO_TogglePin(GPIOC, LD3_Pin);
+     osDelay(1000);
   }
   /* USER CODE END 5 */ 
 }
 
-/** 
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM6 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
+
+/**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
   */
