@@ -5,6 +5,7 @@
 Integration of the u8g2 display library into FreeRTOS project.
 
 - Board Setup:
+![here](/home/ildus/Downloads/IMG_20200507_165628.jpg)
 
 - Compiler setup:
 
