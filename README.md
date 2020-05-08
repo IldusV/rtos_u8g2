@@ -5,6 +5,7 @@
 Integration of u8g2 monochrome display library into the FreeRTOS project.
 
 #### **Prerequisites**
+Development of this project is done under Ubuntu 18.04.4 LT OS.
   * ##### _Compiler setup:_
   * ##### _OpenOCD setup:_
 
