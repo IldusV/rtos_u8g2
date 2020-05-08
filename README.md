@@ -2,14 +2,14 @@
 
 #### **Overview**
 
-Integration of u8g2 display library into the FreeRTOS project.
+Integration of u8g2 monochrome display library into the FreeRTOS project.
 
 #### Board Setup:
 ![](IMG_20200507_165628.jpg)
 
 #### Compile and build:
-  1. From the ```Project``` directory execute: ```$ make``` to build the project;
-  2. Execute: ```$ make clean``` to remove the ```/build``` folder with its output files;
+  1. To build the project from the ```Projects``` directory execute: ```$ make``` ;
+  2. To remove output files from ```/build``` directory execute: ```$ make clean```;
 
 #### Compiler setup:
 
